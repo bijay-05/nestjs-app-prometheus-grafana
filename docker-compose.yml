@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  nest-app:
+    image: nest-app:latest
+    container_name: api-g
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - port=3001
+    volumes:
+      - ./src:/app/src
+    networks:
+      - backend-network
+  prom-server:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend-network
+  grafana-ui:
+    image: grafana/grafana-oss
+    ports:
+      - 3002:3000
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
