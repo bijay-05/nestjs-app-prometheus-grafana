@@ -5,14 +5,17 @@ import { Counter, register } from "prom-client";
 export class MetricsService {
   private appRequestCounter: Counter<string>; // raw request to nest application
   private handledRequestCounter: Counter<string>; // request after nest routing
+
   constructor() {
     this.appRequestCounter = new Counter({
       name: "nestjs_requests_total",
       help: "Total number of requests to the NestJS app",
     });
+    
     this.handledRequestCounter = new Counter({
       name: "nestjs_handled_requests_total",
       help: "Total number of requests to the NestJS app",
+      labelNames: ["method", "route"],
     });
 
     register.clear();
@@ -27,15 +30,20 @@ export class MetricsService {
   incrementAppRequestCounter(): void {
     /*
      * All the requests reaching Nest Application
+    fdfd
     */
     this.appRequestCounter.inc(1);
   }
 
-  incrementHandledRequestCounter(): void {
+  incrementHandledRequestCounter(requestCounterArgs: { method: string, route?: string }): void {
     /**
      * All requests after nest resolved controller and routes
      */
-    this.handledRequestCounter.inc(1);
+    if (requestCounterArgs.route) {
+      // useful for certain routes
+      this.handledRequestCounter.labels(requestCounterArgs.method, requestCounterArgs.route!).inc(1);
+    }
+    this.handledRequestCounter.labels(requestCounterArgs.method).inc(1);
   }
 
   async getCount(): Promise<any> {
