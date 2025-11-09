@@ -32,7 +32,8 @@ export class RequestDefaultInterceptor<T>
 
         // increase the request counter excluding requests to /metrics endpoint by prometheus
         if (request.path !== '/metrics') { 
-          this.metricsService.incrementHandledRequestCounter({ method: request.method });
+          this.metricsService.incrementHandledRequestCounter({ method: request.method, route: request.path });
+          this.metricsService.addToRequestLatencyHist({ latency: 0.025, method: request.method,route: request.path });
         }
       })
     );
