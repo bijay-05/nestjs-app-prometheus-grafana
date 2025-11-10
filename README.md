@@ -2,7 +2,14 @@
 This repository contains NestJS application configured to use Prometheus and Grafana for monitoring application.
 
 ## Metrics Collected
-Currently, only two metrics `**nestjs_requests_total** and **nestjs_handled_requests_total**` of same type (**Counter**) are being collected from the application.
+Currently, following metrics are being instrumented from the application.
+
+1.  ` **nestjs_requests_total** and **nestjs_handled_requests_total** ` of same type (**Counter**).
+
+2. ` **request_latency_histogram** ` of type (**Histogram**) to observe the distribution of request latency values for the application.
+
+3. `  **logged_in_active_sessions** ` of type (**Gauge**) to view total number of active login sessions at any point of time.
+
 
 > [!important]
 > The metric `**nestjs_requests_total**` is recorded from NestMiddleware, which is the first entrypoint for incoming request to the nest application.

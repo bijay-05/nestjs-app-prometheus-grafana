@@ -1,11 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { Counter, register, Histogram } from "prom-client";
+import { Counter, register, Histogram, Gauge } from "prom-client";
 
 @Injectable()
 export class MetricsService {
   private appRequestCounter: Counter<string>; // raw request to nest application
   private handledRequestCounter: Counter<string>; // request after nest routing
   private requestLatencyHist: Histogram; // observe distribution of request latency 
+  private activeSessions: Gauge; // observe active login sessions at any point of time
 
   constructor() {
     this.appRequestCounter = new Counter({
@@ -24,6 +25,11 @@ export class MetricsService {
       help: "Distribution of request latency values",
       labelNames: ["method", "route"],
       buckets: [0.025, 0.05, 0.075, 0.1],
+    });
+
+    this.activeSessions = new Gauge({
+      name: "logged_in_active_sessions",
+      help: "Number of logged in users",
     })
 
     register.clear();
@@ -34,6 +40,7 @@ export class MetricsService {
     register.registerMetric(this.appRequestCounter);
     register.registerMetric(this.handledRequestCounter);
     register.registerMetric(this.requestLatencyHist);
+    register.registerMetric(this.activeSessions);
   }
 
   incrementAppRequestCounter(): void {
@@ -42,6 +49,7 @@ export class MetricsService {
     fdfd
     */
     this.appRequestCounter.inc(1);
+    return;
   }
 
   incrementHandledRequestCounter(requestCounterArgs: { method: string, route: string }): void {
@@ -49,11 +57,23 @@ export class MetricsService {
      * All requests after nest resolved controller and routes
      */
     this.handledRequestCounter.labels(requestCounterArgs.method, requestCounterArgs.route).inc(1);
+    return;
   }
 
   addToRequestLatencyHist(requestLatencyArgs: { latency: number, method: string, route: string }): void {
 
     this.requestLatencyHist.labels(requestLatencyArgs.method, requestLatencyArgs.route).observe(requestLatencyArgs.latency);
+    return;
+  }
+
+  addLoggedInActiveUsers(): void {
+    this.activeSessions.inc();
+    return;
+  }
+
+  removeLoggedInActiveUsers(): void {
+    this.activeSessions.dec();
+    return;
   }
 
   async getCount(): Promise<any> {
